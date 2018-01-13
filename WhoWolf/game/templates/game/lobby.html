@@ -1,0 +1,8 @@
+{% extends 'game/base.html' %}
+
+{% block content %}
+<h1>Lobby</h1>
+<p>ID:  {{ lobby.game_id }}</p>
+
+Hi {{ request.session.InputUserName }}
+{% endblock %}

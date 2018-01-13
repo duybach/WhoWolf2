@@ -1,0 +1,38 @@
+{% extends 'game/base.html' %}
+
+{% block content %}
+    <h1>Game</h1>
+
+    Hi {{ request.session.InputUserName }}
+    You are in the lobby {{ lobby.game_id }}
+
+    <p>List of players</p>
+    <ul id="players">
+        {% for fellow_player in fellow_players %}
+            <li>{{ fellow_player.username }}</li>
+        {% endfor %}
+    </ul>
+
+    <div id="response"></div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        function get_players(){
+            $.ajax({
+                type: "GET",
+                url: "/game/{{ lobby.game_id }}/get_players",
+                dataType: 'json'
+            }).done(function(data) {
+                players = "";
+                for (i = 0; i < data.length; i++) {
+                    players += "<li>" + data[i].username + "</li>";
+                }
+                $("#players").html(players);
+            });
+        }
+
+        get_players();
+        setInterval(function(){get_players();}, 2000);
+    </script>
+{% endblock %}

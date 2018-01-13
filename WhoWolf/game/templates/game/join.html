@@ -1,0 +1,25 @@
+{% extends 'game/base.html' %}
+
+{% block content %}
+<h1>Join Game</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="InputCode">Enter Code</label>
+        <input type="text" class="form-control" id="InputCode" name="InputCode" aria-describedby="codeHelp"
+               placeholder="Enter code">
+        <small id="codeHelp" class="form-text text-muted">Ask your host for the code!</small>
+    </div>
+
+    <div class="form-group">
+        <label for="InputUserName">Enter username</label>
+        <input type="text" class="form-control" id="InputUserName" name="InputUserName" aria-describedby="usernameHelp"
+               placeholder="Enter username">
+        <small id="usernameHelp" class="form-text text-muted">Choose your username.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
