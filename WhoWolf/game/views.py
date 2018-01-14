@@ -56,8 +56,33 @@ def game(request):
                                                   'fellow_players': lobby.players.all()})
 
 
-def get_players(request, game_id):
+def status(request, game_id):
     lobby = Lobby.objects.get(game_id=game_id)
-    players = lobby.players.all()
-    data = [{'username': player.username} for player in players]
-    return HttpResponse(json.dumps(data), content_type="application/json")
+    data = ''
+    if lobby.round == 0:
+        players = lobby.players.all()
+        players = [{'username': player.username} for player in players]
+        data = {
+            'round': lobby.round,
+            'players': players,
+            'host': True if lobby.host.username == request.session['InputUserName'] else False
+        }
+    elif lobby.round == 1:
+        players = lobby.players.all()
+        players = [{'username': player.username, 'role': player.role} for player in players]
+        data = {
+            'round': lobby.round,
+            'players': players,
+            'host': True if lobby.host.username == request.session['InputUserName'] else False
+        }
+
+        print(data)
+
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+def start(request, game_id):
+    lobby = Lobby.objects.get(game_id=game_id)
+    lobby.set_round(1)
+
+    return HttpResponse(json.dumps(''), content_type='application/json')

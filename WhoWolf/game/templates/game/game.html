@@ -1,38 +1,67 @@
 {% extends 'game/base.html' %}
 
 {% block content %}
-    <h1>Game</h1>
+    <h1>Game Round: <span id="round"></span></h1>
 
-    Hi {{ request.session.InputUserName }}
-    You are in the lobby {{ lobby.game_id }}
+    <p>Hi {{ player.username }}</p>
+    <p>You are in the lobby {{ lobby.game_id }}</p>
+
+    <p>{% if player.username == lobby.host.username %} You are the host {% endif %} </p>
+
+    <p id="role"></p>
 
     <p>List of players</p>
-    <ul id="players">
-        {% for fellow_player in fellow_players %}
-            <li>{{ fellow_player.username }}</li>
-        {% endfor %}
-    </ul>
+    <ul id="players"></ul>
 
-    <div id="response"></div>
+    {% if player.username == lobby.host.username and lobby.round == 0 %}
+        <button id="start_button" onclick="start_game()" class="btn btn-primary">Start game</button>
+    {% endif %}
 {% endblock %}
 
 {% block script %}
     <script>
-        function get_players(){
+        function get_players(players) {
+            players_list = "";
+            for (i = 0; i < players.length; i++) {
+                players_list += "<li>" + players[i].username + "</li>";
+                if (players[i].username == '{{ player.username }}') {
+                    if (players[i].role) {
+                        $("#role").html('Your role is ' + players[i].role);
+                    }
+                }
+            }
+            $("#players").html(players_list);
+        }
+
+        function status() {
             $.ajax({
                 type: "GET",
-                url: "/game/{{ lobby.game_id }}/get_players",
-                dataType: 'json'
+                url: "{% url 'game:status' lobby.game_id %}",
+                dataType: 'json',
             }).done(function(data) {
-                players = "";
-                for (i = 0; i < data.length; i++) {
-                    players += "<li>" + data[i].username + "</li>";
+                $("#round").html(data.round);
+                get_players(data.players)
+
+                if (data.round > 0) {
+                 $("#start_button").remove();
                 }
-                $("#players").html(players);
             });
         }
 
-        get_players();
-        setInterval(function(){get_players();}, 2000);
+        function start_game() {
+            $("#start_button").addClass('disabled');
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'game:start' lobby.game_id %}",
+                dataType: "json",
+                data: {"csrfmiddlewaretoken": "{{ csrf_token }}"}
+            }).done(function(data) {
+                $("#start_button").remove();
+            });
+        }
+
+        status();
+        setInterval(function(){status();}, 2000);
     </script>
 {% endblock %}

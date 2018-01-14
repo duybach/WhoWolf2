@@ -10,5 +10,6 @@ urlpatterns = [
     path('game', views.game, name='game'),
 
     # ajax api
-    path('game/<str:game_id>/get_players', views.get_players, name='get_players')
+    path('game/<str:game_id>/status', views.status, name='status'),
+    path('game/<str:game_id>/start', views.start, name='start')
 ]
