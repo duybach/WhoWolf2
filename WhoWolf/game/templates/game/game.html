@@ -1,7 +1,9 @@
 {% extends 'game/base.html' %}
 
 {% block content %}
-    <h1>Game Round: <span id="round"></span></h1>
+    <h1>Game Round: <span id="round">{{ lobby.round }}</span> (Time left: <span id="time"></span>s)</h1>
+
+    <p>It's <span id="daytime"></span></p>
 
     <p>Hi {{ player.username }}</p>
     <p>You are in the lobby {{ lobby.game_id }}</p>
@@ -20,10 +22,23 @@
 
 {% block script %}
     <script>
-        function get_players(players) {
+        function get_players(players, data) {
             players_list = "";
             for (i = 0; i < players.length; i++) {
-                players_list += "<li>" + players[i].username + "</li>";
+                var vote = ""
+                if (players[i].alive) {
+                    var player_status = "Alive"
+                    if (data.round % 2 == 0) {
+                        var vote_button = "<a href=\"#\" onclick=\"vote(" + players[i].id + ")\">Vote</a>"
+                        var vote_count = data.players[i].vote_count
+
+                        var vote = vote_button + " (Votes: " + vote_count + ")"
+                    }
+                } else {
+                    var player_status = "Dead"
+                }
+
+                players_list += "<li>" + players[i].username + " (" + player_status + ") " + vote + "</li>";
                 if (players[i].username == '{{ player.username }}') {
                     if (players[i].role) {
                         $("#role").html('Your role is ' + players[i].role);
@@ -40,10 +55,17 @@
                 dataType: 'json',
             }).done(function(data) {
                 $("#round").html(data.round);
-                get_players(data.players)
+                $("#time").html(data.time);
+                get_players(data.players, data)
 
                 if (data.round > 0) {
-                 $("#start_button").remove();
+                    $("#start_button").remove();
+
+                    if (data.round % 2 == 1) {
+                        $("#daytime").html("nighttime");
+                    } else if (data.round % 2 == 0) {
+                        $("#daytime").html("daytime");
+                    }
                 }
             });
         }
@@ -61,7 +83,21 @@
             });
         }
 
+        function vote(user_id) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'game:vote' lobby.game_id %}",
+                dataType: "json",
+                data: {
+                    "csrfmiddlewaretoken": "{{ csrf_token }}",
+                    "vote": user_id
+                }
+            }).done(function(data) {
+                // do nothing
+            });
+        }
+
         status();
-        setInterval(function(){status();}, 2000);
+        setInterval(function(){status();}, 1000);
     </script>
 {% endblock %}

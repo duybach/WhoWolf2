@@ -11,5 +11,6 @@ urlpatterns = [
 
     # ajax api
     path('game/<str:game_id>/status', views.status, name='status'),
-    path('game/<str:game_id>/start', views.start, name='start')
+    path('game/<str:game_id>/start', views.start, name='start'),
+    path('game/<str:game_id>/vote', views.vote, name='vote')
 ]
