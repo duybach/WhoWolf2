@@ -69,11 +69,13 @@ def status(request, game_id):
         }
     elif lobby.round == 1:
         players = lobby.players.all()
-        players = [{'username': player.username, 'role': player.role} for player in players]
+        players = [{'username': player.username, 'role': player.role, 'alive': player.alive} for player in players]
         data = {
             'round': lobby.round,
             'players': players,
-            'host': True if lobby.host.username == request.session['InputUserName'] else False
+            'host': True if lobby.host.username == request.session['InputUserName'] else False,
+            'night': lobby.night,
+            'time': lobby.time
         }
 
         print(data)

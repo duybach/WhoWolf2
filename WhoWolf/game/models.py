@@ -10,6 +10,8 @@ class Lobby(models.Model):
     game_id = models.CharField(max_length=6, blank=True)
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='lobby_host', null=True)
     round = models.IntegerField(default=0)
+    time = models.IntegerField(default=60)
+    night = models.BooleanField(default=True)
 
     def assign_roles(self):
         print('assigning roles ...')
@@ -39,6 +41,7 @@ class Player(models.Model):
     username = models.CharField(max_length=32)
     lobby = models.ForeignKey(Lobby, on_delete=models.CASCADE, related_name='players')
     role = models.CharField(max_length=32, blank=True)
+    alive = models.BooleanField(default=True)
 
     @classmethod
     def create(cls, username, lobby):
