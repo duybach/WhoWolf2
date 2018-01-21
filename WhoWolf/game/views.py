@@ -64,16 +64,45 @@ def status(request, game_id):
     if request.method == 'GET':
         lobby = Lobby.objects.get(game_id=game_id)
         if lobby.round == 0:
-            players = lobby.players.all()
-            players = [{'id': player.id, 'username': player.username} for player in players]
+            players = []
+            for fellow_player in lobby.players.all():
+                players.append({
+                    'id': fellow_player.id,
+                    'username': fellow_player.username
+                })
             data = {
                 'round': lobby.round,
                 'players': players,
                 'host': True if lobby.host.id == request.session['user_id'] else False
             }
+        elif lobby.round == -1:
+            players = []
+            for fellow_player in lobby.players.all():
+                players.append({
+                    'id': fellow_player.id,
+                    'username': fellow_player.username
+                })
+            data = {
+                'winning_team': lobby.winning_team,
+                'players': players,
+                'host': True if lobby.host.id == request.session['user_id'] else False
+            }
         else:
-            players = lobby.players.all()
-            players = [{'id': player.id, 'username': player.username, 'alive': player.alive, 'vote_count': player.get_votes()} for player in players]
+            players = []
+            for fellow_player in lobby.players.all():
+                fellow_player_dict = {
+                    'id': fellow_player.id,
+                    'username': fellow_player.username,
+                    'alive': fellow_player.alive,
+                    'vote_count': fellow_player.voters.count()
+                }
+
+                if player.vote_target and player.vote_target.id == fellow_player.id or \
+                   player.kill_target and player.kill_target.id == fellow_player.id or \
+                   player.heal_target and player.heal_target.id == fellow_player.id:
+                    fellow_player_dict.update({'selected': True})
+
+                players.append(fellow_player_dict)
 
             time = int((lobby.time - timezone.now()).total_seconds())
 
@@ -142,7 +171,8 @@ def heal(request, game_id):
         heal_target = Player.objects.get(id=request.POST['heal_target'])
         player = Player.objects.get(id=request.session['user_id'])
 
-        player.heal_target = heal_target
-        player.save()
+        if player.heal > 0:
+            player.heal_target = heal_target
+            player.save()
 
         return HttpResponse(json.dumps(''), content_type='application/json')

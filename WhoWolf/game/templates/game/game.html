@@ -32,22 +32,36 @@
                     if (data.round % 2 == 0) {
                         var vote_button = "";
                         if (data.alive && data.id != players[i].id) {
-                            vote_button = "<a href=\"#\" onclick=\"vote(" + players[i].id + ")\">Vote</a>";
+                            if (players[i].selected) {
+                                vote_button = "<b>Vote</b>"
+                            } else {
+                                vote_button = "<button onclick=\"vote(" + players[i].id + ")\">Vote</button>";
+                            }
                         }
                         var vote_count = data.players[i].vote_count;
                         action_button = vote_button + " (Votes: " + vote_count + ")";
                     } else if (data.round % 2 == 1) {
                         if (data.role.id == 1) {
                             var kill_button = "";
-                            if (data.alive && data.id != players[i].id) {
-                                kill_button = "<a href=\"#\" onclick=\"kill(" + players[i].id + ")\">Kill</a>";
+                            if (data.alive && players[i].alive && data.id != players[i].id) {
+                                if (players[i].selected) {
+                                    kill_button = "<b>Kill</b>"
+                                } else {
+                                    kill_button = "<button onclick=\"kill(" + players[i].id + ")\">Kill</button>";
+                                }
                             }
                             // var vote_count = data.players[i].vote_count;
                             // action_button = vote_button + " (Votes: " + vote_count + ")";
                             action_button = kill_button
                         } else if (data.role.id == 2) {
                             var heal_button = "";
-                            heal_button = "<a href=\"#\" onclick=\"heal(" + players[i].id + ")\">Heal</a>";
+                            if (data.alive && players[i].alive && data.role.heal > 0) {
+                                if (players[i].selected) {
+                                    heal_button = "<b>Heal</b>"
+                                } else {
+                                    heal_button = "<button onclick=\"heal(" + players[i].id + ")\">Heal</button>";
+                                }
+                            }
                             // var vote_count = data.players[i].vote_count;
                             // action_button = vote_button + " (Votes: " + vote_count + ")";
                             action_button = heal_button
@@ -68,6 +82,9 @@
                 url: "{% url 'game:status' lobby.game_id %}",
                 dataType: 'json',
             }).done(function(data) {
+                if (data.winning_team) {
+                    window.location.replace("http://stackoverflow.com");
+                }
                 $("#round").html(data.round);
                 $("#time").html(data.time);
                 if (data.role) {
@@ -147,6 +164,6 @@
         }
 
         status();
-        setInterval(function(){status();}, 1000);
+        setInterval(function(){status()}, 1000);
     </script>
 {% endblock %}

@@ -9,6 +9,7 @@ class Lobby(models.Model):
     game_id = models.CharField(max_length=6, blank=True)
     host = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='lobby_host', null=True)
     round = models.IntegerField(default=0)
+    winning_team = models.IntegerField(default=0)
     time = models.DateTimeField(null=True)
 
     def assign_roles(self):
@@ -29,6 +30,34 @@ class Lobby(models.Model):
 
         return cls(game_id=game_id)
 
+    def check_winning_condition(self):
+        """
+        0 == Ongoing game
+        1 == Team good guys won
+        2 == Team bad guys won
+        """
+        team_1_count = 0
+        team_2_count = 0
+        for player in self.players.all():
+            if player.alive:
+                if player.role == 0:
+                    team_1_count += 1
+                elif player.role == 1:
+                    team_2_count += 1
+
+            if team_1_count > 0 and team_2_count > 0:
+                return
+
+        if team_1_count == 0:
+            self.round = -1
+            self.winning_team = 1
+            self.save()
+
+        if team_2_count == 0:
+            self.round = -1
+            self.winning_team = 2
+            self.save()
+
     def set_round(self, round):
         if round == 1:
             self.round = 1
@@ -37,23 +66,29 @@ class Lobby(models.Model):
             self.assign_roles()
 
     def next_round(self):
-        self.round += 1
-        self.time = timezone.now() + timezone.timedelta(seconds=10)
-        self.save()
+        if self.round >= 0:
+            self.round += 1
+            self.time = timezone.now() + timezone.timedelta(seconds=10)
+            self.save()
 
-        for player in self.players.all():
-            if self.round % 2 == 1:
-                if player.get_votes() > self.players.count()/2:
-                    player.alive = False
-            elif self.round % 2 == 0:
-                if player.killers.count() > 0:
-                    if not player.healers.count() > 0:
+            for player in self.players.all():
+                if self.round % 2 == 1:
+                    if player.voters.count() > self.players.count()/2:
                         player.alive = False
+                elif self.round % 2 == 0:
+                    if player.killers.count() > 0:
+                        if not player.healers.count() > 0:
+                            player.alive = False
 
-            player.save()
+                    if player.heal_target:
+                        player.heal -= 1
 
-        for player in self.players.all():
-            player.reset_actions()
+                player.save()
+
+            for player in self.players.all():
+                player.reset_actions()
+
+        self.check_winning_condition()
 
 
 class Player(models.Model):
@@ -69,9 +104,6 @@ class Player(models.Model):
     @classmethod
     def create(cls, username, lobby):
         return cls(username=username, lobby=lobby)
-
-    def get_votes(self):
-        return self.voters.count()
 
     def reset_actions(self):
         self.vote_target = None
