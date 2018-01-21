@@ -1,0 +1,23 @@
+{% extends 'game/base.html' %}
+
+{% block content %}
+    <h1>Game End: Team <span id="round">{{ lobby.winning_team }}</span> won !!!</h1>
+
+    <p>Hi {{ player.username }}</p>
+    <p>You are in the lobby {{ lobby.game_id }}</p>
+
+    <p>{% if player.username == lobby.host.username %} You are the host {% endif %} </p>
+
+    <p id="role">Your role is {{ player.role }}</p>
+
+    <p>List of players</p>
+    <ul id="players">
+        {% for fellow_player in players %}
+            <li>{{ fellow_player.username }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if player.username == lobby.host.username %}
+        <button id="restart_button" onclick="restart_button()" class="btn btn-primary">restart_button</button>
+    {% endif %}
+{% endblock %}

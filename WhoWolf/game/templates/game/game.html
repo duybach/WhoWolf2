@@ -83,7 +83,7 @@
                 dataType: 'json',
             }).done(function(data) {
                 if (data.winning_team) {
-                    window.location.replace("http://stackoverflow.com");
+                    window.location.replace("{% url 'game:game_end' %}");
                 }
                 $("#round").html(data.round);
                 $("#time").html(data.time);

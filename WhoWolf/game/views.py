@@ -51,11 +51,13 @@ def join_game(request):
 def game(request):
     if request.method == 'GET':
         player = Player.objects.get(id=request.session['user_id'])
+        return render(request, 'game/game.html', {'player': player, 'lobby': player.lobby})
 
-        lobby = player.lobby
 
-        return render(request, 'game/game.html', {'player': player, 'lobby': player.lobby,
-                                                  'fellow_players': lobby.players.all()})
+def game_end(request):
+    if request.method == 'GET':
+        player = Player.objects.get(id=request.session['user_id'])
+        return render(request, 'game/game_end.html', {'player': player, 'lobby': player.lobby, 'players': player.lobby.players.all()})
 
 
 def status(request, game_id):

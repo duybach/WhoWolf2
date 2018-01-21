@@ -48,12 +48,12 @@ class Lobby(models.Model):
             if team_1_count > 0 and team_2_count > 0:
                 return
 
-        if team_1_count == 0:
+        if team_2_count == 0 and team_1_count > 0:
             self.round = -1
             self.winning_team = 1
             self.save()
 
-        if team_2_count == 0:
+        if team_1_count == 0 and team_2_count > 0:
             self.round = -1
             self.winning_team = 2
             self.save()
