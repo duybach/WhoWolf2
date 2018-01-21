@@ -26,7 +26,12 @@ def create_game(request):
         player.save()
 
         lobby.host = player
+        lobby.werewolf_count = request.POST.get('InputWerwolfNumber', 0)
+        lobby.witch_count = request.POST.get('InputWitchNumber', 0)
         lobby.save()
+
+        print(lobby.werewolf_count)
+        print(lobby.witch_count)
 
         request.session['user_id'] = player.id
 
@@ -99,10 +104,13 @@ def status(request, game_id):
                     'vote_count': fellow_player.voters.count()
                 }
 
-                if player.vote_target and player.vote_target.id == fellow_player.id or \
-                   player.kill_target and player.kill_target.id == fellow_player.id or \
-                   player.heal_target and player.heal_target.id == fellow_player.id:
-                    fellow_player_dict.update({'selected': True})
+                if lobby.round % 2 == 1:
+                    if player.vote_target and player.vote_target.id == fellow_player.id:
+                        fellow_player_dict.update({'selected': True})
+                elif lobby.round % 2 == 0:
+                    if player.kill_target and player.kill_target.id == fellow_player.id or \
+                       player.heal_target and player.heal_target.id == fellow_player.id:
+                        fellow_player_dict.update({'selected': True})
 
                 players.append(fellow_player_dict)
 
@@ -123,13 +131,6 @@ def status(request, game_id):
                 'host': True if lobby.host.username == request.session['user_id'] else False
             }
 
-            if lobby.round % 2 == 1:
-                # night time
-                pass
-            elif lobby.round % 2 == 0:
-                # day time
-                pass
-
             if time <= 0:
                 lobby.next_round()
 
@@ -141,7 +142,8 @@ def status(request, game_id):
 def start(request, game_id):
     if request.method == 'POST':
         lobby = Lobby.objects.get(game_id=game_id)
-        lobby.set_round(1)
+        if not lobby.round >= 1:
+            lobby.set_round(1)
 
         return HttpResponse(json.dumps(''), content_type='application/json')
 

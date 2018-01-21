@@ -11,14 +11,23 @@ class Lobby(models.Model):
     round = models.IntegerField(default=0)
     winning_team = models.IntegerField(default=0)
     time = models.DateTimeField(null=True)
+    werewolf_count = models.IntegerField(default=0)
+    witch_count = models.IntegerField(default=0)
 
     def assign_roles(self):
-        players = self.players.all()
+        players = self.players.all().order_by('?')
+
         for player in players:
-            player.role = random.randrange(3)
-            if player.role == 2:
+            if self.werewolf_count > 0:
+                player.role = 1
+                self.werewolf_count -= 1
+            elif self.witch_count > 0:
+                player.role = 2
                 player.heal = 1
+                self.witch_count -= 1
             player.save()
+
+        self.save()
 
     @classmethod
     def create(cls):
@@ -58,22 +67,30 @@ class Lobby(models.Model):
             self.winning_team = 2
             self.save()
 
+    def get_count_alive_players(self):
+        count = 0
+        for player in self.players.all():
+            if player.alive:
+                count += 1
+
+        return count
+
     def set_round(self, round):
         if round == 1:
             self.round = 1
-            self.time = timezone.now() + timezone.timedelta(seconds=10)
+            self.time = timezone.now() + timezone.timedelta(seconds=15)
             self.save()
             self.assign_roles()
 
     def next_round(self):
         if self.round >= 0:
             self.round += 1
-            self.time = timezone.now() + timezone.timedelta(seconds=10)
+            self.time = timezone.now() + timezone.timedelta(seconds=15)
             self.save()
 
             for player in self.players.all():
                 if self.round % 2 == 1:
-                    if player.voters.count() > self.players.count()/2:
+                    if player.voters.count() > self.get_count_alive_players()/2.0:
                         player.alive = False
                 elif self.round % 2 == 0:
                     if player.killers.count() > 0:
