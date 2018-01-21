@@ -25,25 +25,39 @@
         function get_players(players, data) {
             players_list = "";
             for (i = 0; i < players.length; i++) {
-                var vote = ""
+                var vote = "";
+                var action_button = "";
                 if (players[i].alive) {
-                    var player_status = "Alive"
+                    var player_status = "Alive";
                     if (data.round % 2 == 0) {
-                        var vote_button = "<a href=\"#\" onclick=\"vote(" + players[i].id + ")\">Vote</a>"
-                        var vote_count = data.players[i].vote_count
-
-                        var vote = vote_button + " (Votes: " + vote_count + ")"
+                        var vote_button = "";
+                        if (data.alive && data.id != players[i].id) {
+                            vote_button = "<a href=\"#\" onclick=\"vote(" + players[i].id + ")\">Vote</a>";
+                        }
+                        var vote_count = data.players[i].vote_count;
+                        action_button = vote_button + " (Votes: " + vote_count + ")";
+                    } else if (data.round % 2 == 1) {
+                        if (data.role.id == 1) {
+                            var kill_button = "";
+                            if (data.alive && data.id != players[i].id) {
+                                kill_button = "<a href=\"#\" onclick=\"kill(" + players[i].id + ")\">Kill</a>";
+                            }
+                            // var vote_count = data.players[i].vote_count;
+                            // action_button = vote_button + " (Votes: " + vote_count + ")";
+                            action_button = kill_button
+                        } else if (data.role.id == 2) {
+                            var heal_button = "";
+                            heal_button = "<a href=\"#\" onclick=\"heal(" + players[i].id + ")\">Heal</a>";
+                            // var vote_count = data.players[i].vote_count;
+                            // action_button = vote_button + " (Votes: " + vote_count + ")";
+                            action_button = heal_button
+                        }
                     }
                 } else {
-                    var player_status = "Dead"
+                    var player_status = "Dead";
                 }
 
-                players_list += "<li>" + players[i].username + " (" + player_status + ") " + vote + "</li>";
-                if (players[i].username == '{{ player.username }}') {
-                    if (players[i].role) {
-                        $("#role").html('Your role is ' + players[i].role);
-                    }
-                }
+                players_list += "<li>" + players[i].username + " (" + player_status + ") " + action_button + "</li>";
             }
             $("#players").html(players_list);
         }
@@ -56,7 +70,14 @@
             }).done(function(data) {
                 $("#round").html(data.round);
                 $("#time").html(data.time);
-                get_players(data.players, data)
+                if (data.role) {
+                    var role_text = "Your role is " + data.role.name
+                    if (data.role.id == 2) {
+                        role_text = role_text.concat(". You have " + data.role.heal + " heal left.")
+                    }
+                    $("#role").html(role_text);
+                }
+                get_players(data.players, data);
 
                 if (data.round > 0) {
                     $("#start_button").remove();
@@ -90,7 +111,35 @@
                 dataType: "json",
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",
-                    "vote": user_id
+                    "vote_target": user_id
+                }
+            }).done(function(data) {
+                // do nothing
+            });
+        }
+
+        function kill(user_id) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'game:kill' lobby.game_id %}",
+                dataType: "json",
+                data: {
+                    "csrfmiddlewaretoken": "{{ csrf_token }}",
+                    "kill_target": user_id
+                }
+            }).done(function(data) {
+                // do nothing
+            });
+        }
+
+        function heal(user_id) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'game:heal' lobby.game_id %}",
+                dataType: "json",
+                data: {
+                    "csrfmiddlewaretoken": "{{ csrf_token }}",
+                    "heal_target": user_id
                 }
             }).done(function(data) {
                 // do nothing

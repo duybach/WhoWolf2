@@ -4,8 +4,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from WhoWolf.settings import GAME_ROLES
-
 
 class Lobby(models.Model):
     game_id = models.CharField(max_length=6, blank=True)
@@ -16,7 +14,9 @@ class Lobby(models.Model):
     def assign_roles(self):
         players = self.players.all()
         for player in players:
-            player.role = random.choice(GAME_ROLES)
+            player.role = random.randrange(3)
+            if player.role == 2:
+                player.heal = 1
             player.save()
 
     @classmethod
@@ -45,17 +45,26 @@ class Lobby(models.Model):
             if self.round % 2 == 1:
                 if player.get_votes() > self.players.count()/2:
                     player.alive = False
+            elif self.round % 2 == 0:
+                if player.killers.count() > 0:
+                    if not player.healers.count() > 0:
+                        player.alive = False
 
-                player.vote = None
-                player.save()
+            player.save()
+
+        for player in self.players.all():
+            player.reset_actions()
 
 
 class Player(models.Model):
     username = models.CharField(max_length=32)
     lobby = models.ForeignKey(Lobby, on_delete=models.CASCADE, related_name='players')
-    role = models.CharField(max_length=32, blank=True)
     alive = models.BooleanField(default=True)
-    vote = models.ForeignKey('self', default=None, null=True, on_delete=models.SET_NULL, related_name='voters')
+    role = models.IntegerField(default=0)
+    heal = models.IntegerField(default=0)
+    vote_target = models.ForeignKey('self', default=None, null=True, on_delete=models.SET_NULL, related_name='voters')
+    kill_target = models.ForeignKey('self', default=None, null=True, on_delete=models.SET_NULL, related_name='killers')
+    heal_target = models.ForeignKey('self', default=None, null=True, on_delete=models.SET_NULL, related_name='healers')
 
     @classmethod
     def create(cls, username, lobby):
@@ -63,3 +72,9 @@ class Player(models.Model):
 
     def get_votes(self):
         return self.voters.count()
+
+    def reset_actions(self):
+        self.vote_target = None
+        self.kill_target = None
+        self.heal_target = None
+        self.save()

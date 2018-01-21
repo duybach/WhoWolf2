@@ -122,11 +122,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
-# Game roles
-GAME_ROLES = [
-    'Werwolf',
-    'Bewohner',
-    'Hexe',
-    'Hure'
-]
+ROLES = ['Bauer', 'Werwolf', 'Hexe']

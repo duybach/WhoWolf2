@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from .models import Lobby
 from .models import Player
+from WhoWolf import settings
 
 
 # Create your views here.
@@ -58,6 +59,8 @@ def game(request):
 
 
 def status(request, game_id):
+    player = Player.objects.get(id=request.session['user_id'])
+
     if request.method == 'GET':
         lobby = Lobby.objects.get(game_id=game_id)
         if lobby.round == 0:
@@ -70,15 +73,23 @@ def status(request, game_id):
             }
         else:
             players = lobby.players.all()
-            players = [{'id': player.id, 'username': player.username, 'role': player.role, 'alive': player.alive, 'vote_count': player.get_votes()} for player in players]
+            players = [{'id': player.id, 'username': player.username, 'alive': player.alive, 'vote_count': player.get_votes()} for player in players]
 
             time = int((lobby.time - timezone.now()).total_seconds())
 
+            role = {'id': player.role, 'name': settings.ROLES[player.role]}
+
+            if role['id'] == 2:
+                role.update({'heal': player.heal})
+
             data = {
-                'host': True if lobby.host.username == request.session['user_id'] else False,
+                'id': player.id,
+                'alive': player.alive,
+                'role': role,
                 'players': players,
                 'round': lobby.round,
-                'time': time
+                'time': time,
+                'host': True if lobby.host.username == request.session['user_id'] else False
             }
 
             if lobby.round % 2 == 1:
@@ -106,10 +117,32 @@ def start(request, game_id):
 
 def vote(request, game_id):
     if request.method == 'POST':
-        vote = Player.objects.get(id=request.POST['vote'])
+        vote_target = Player.objects.get(id=request.POST['vote_target'])
         player = Player.objects.get(id=request.session['user_id'])
 
-        player.vote = vote
+        player.vote_target = vote_target
+        player.save()
+
+        return HttpResponse(json.dumps(''), content_type='application/json')
+
+
+def kill(request, game_id):
+    if request.method == 'POST':
+        kill_target = Player.objects.get(id=request.POST['kill_target'])
+        player = Player.objects.get(id=request.session['user_id'])
+
+        player.kill_target = kill_target
+        player.save()
+
+        return HttpResponse(json.dumps(''), content_type='application/json')
+
+
+def heal(request, game_id):
+    if request.method == 'POST':
+        heal_target = Player.objects.get(id=request.POST['heal_target'])
+        player = Player.objects.get(id=request.session['user_id'])
+
+        player.heal_target = heal_target
         player.save()
 
         return HttpResponse(json.dumps(''), content_type='application/json')
