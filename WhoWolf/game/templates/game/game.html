@@ -1,23 +1,26 @@
 {% extends 'game/base.html' %}
 
 {% block content %}
-    <h1>Game Round: <span id="round">{{ lobby.round }}</span> (Time left: <span id="time"></span>s)</h1>
+    <div class="text-center">
+        <h1 id="lobby-headline">Lobby <small class="text-muted">{{ lobby.game_id }}</small></h1>
+        <h1 id="lobby-status" class="d-none">
+            Game Round: <span id="round">{{ lobby.round }}</span> <br>
+            <small  class="text-muted">(Time left: <span id="time"></span>s)</small>
+        </h1>
 
-    <p>It's <span id="daytime"></span></p>
+        <p id="lobby-daytime" class="d-none">It's <span id="daytime"></span></p>
 
-    <p>Hi {{ player.username }}</p>
-    <p>You are in the lobby {{ lobby.game_id }}</p>
+        <p>Welcome {{ player.username }}</p>
 
-    <p>{% if player.username == lobby.host.username %} You are the host {% endif %} </p>
+        <p id="role"></p>
 
-    <p id="role"></p>
+        <p>List of players</p>
+        <div id="players"></div>
 
-    <p>List of players</p>
-    <ul id="players"></ul>
-
-    {% if player.username == lobby.host.username and lobby.round == 0 %}
-        <button id="start_button" onclick="start_game()" class="btn btn-primary">Start game</button>
-    {% endif %}
+        {% if player.username == lobby.host.username and lobby.round == 0 %}
+            <button id="start_button" onclick="start_game()" class="btn btn-primary">Start game</button>
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block script %}
@@ -71,7 +74,15 @@
                     var player_status = "Dead";
                 }
 
-                players_list += "<li>" + players[i].username + " (" + player_status + ") " + action_button + "</li>";
+                if (data.round == 0) {
+                    players_list += "<p>- " + players[i].username + "</p>";
+                } else {
+                    if (players[i].alive) {
+                        players_list += "<p>- " + players[i].username + " " + action_button + "</p>";
+                    } else {
+                        players_list += "<p>- <strike>" + players[i].username + "</strike></p>";
+                    }
+                }
             }
             $("#players").html(players_list);
         }
@@ -84,6 +95,11 @@
             }).done(function(data) {
                 if (data.winning_team) {
                     window.location.replace("{% url 'game:game_end' %}");
+                }
+                if (data.round > 0) {
+                    $("#lobby-headline").addClass("d-none");
+                    $("#lobby-status").removeClass("d-none");
+                    $("#lobby-daytime").removeClass("d-none");
                 }
                 $("#round").html(data.round);
                 $("#time").html(data.time);

@@ -1,35 +1,35 @@
 {% extends 'game/base.html' %}
 
 {% block content %}
-<div class="text-center">
-    <h1 id="index-headline">Welcome player!</h1>
-</div>
-<div class="text-center">
-    <a href="{% url 'game:create_game' %}" role="button" class="btn btn-primary index-button">Create game</a>
-</div>
-<div class="text-center">
-    <a href="{% url 'game:join_game' %}" role="button" class="btn btn-secondary index-button">Join game</a>
-</div>
+    <div class="text-center">
+        <h1 id="index-headline">Welcome player!</h1>
+        <div>
+            <a href="{% url 'game:create_game' %}" role="button" class="btn btn-primary index-button">Create game</a>
+        </div>
+        <div>
+            <a href="{% url 'game:join_game' %}" role="button" class="btn btn-secondary index-button">Join game</a>
+        </div>
 
-<div id="quotes" class="text-center">
-    <blockquote class="blockquote">
-        <p class="mb-0">Best game 2017</p>
-        <footer class="blockquote-footer">Dunkey on <cite title="Youtube.com">Youtube.com</cite></footer>
-    </blockquote>
+        <div id="quotes">
+            <blockquote class="blockquote">
+                <p class="mb-0">Best game 2017</p>
+                <footer class="blockquote-footer">Dunkey on <cite title="Youtube.com">Youtube.com</cite></footer>
+            </blockquote>
 
-    <blockquote class="blockquote">
-        <p class="mb-0">10/10! Masterpiece</p>
-        <footer class="blockquote-footer">IGN</footer>
-    </blockquote>
+            <blockquote class="blockquote">
+                <p class="mb-0">10/10! Masterpiece</p>
+                <footer class="blockquote-footer">IGN</footer>
+            </blockquote>
 
-    <blockquote class="blockquote">
-        <p class="mb-0">I'd pay for this game</p>
-        <footer class="blockquote-footer">Barack Obama in <cite title="The Times">The Times</cite></footer>
-    </blockquote>
+            <blockquote class="blockquote">
+                <p class="mb-0">I'd pay for this game</p>
+                <footer class="blockquote-footer">Barack Obama in <cite title="The Times">The Times</cite></footer>
+            </blockquote>
 
-    <blockquote class="blockquote">
-        <p class="mb-0">Better than League of Legends</p>
-        <footer class="blockquote-footer">Tyler1 on <cite title="Twitch.tv">Twitch.tv</cite></footer>
-    </blockquote>
-</div>
+            <blockquote class="blockquote">
+                <p class="mb-0">Better than League of Legends</p>
+                <footer class="blockquote-footer">Tyler1 on <cite title="Twitch.tv">Twitch.tv</cite></footer>
+            </blockquote>
+        </div>
+    </div>
 {% endblock %}

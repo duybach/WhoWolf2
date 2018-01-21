@@ -30,9 +30,6 @@ def create_game(request):
         lobby.witch_count = request.POST.get('InputWitchNumber', 0)
         lobby.save()
 
-        print(lobby.werewolf_count)
-        print(lobby.witch_count)
-
         request.session['user_id'] = player.id
 
         return redirect('game:game')
@@ -43,14 +40,25 @@ def join_game(request):
         return render(request, 'game/join.html', {})
     elif request.method == 'POST':
         game_id = request.POST['InputCode'].upper()
-        lobby = Lobby.objects.get(game_id=game_id)
+        try:
+            lobby = Lobby.objects.get(game_id=game_id)
+        except Lobby.DoesNotExist:
+            lobby = None
 
-        player = Player.create(request.POST['InputUserName'], lobby)
-        player.save()
+        if lobby:
+            player = Player.create(request.POST.get('InputUserName', 'Anon'), lobby)
+            player.save()
 
-        request.session['user_id'] = player.id
+            request.session['user_id'] = player.id
 
-        return redirect('game:game')
+            return redirect('game:game')
+        else:
+            context = {
+                'InputUserName': request.POST.get('InputUserName', ''),
+                'InputCode': request.POST.get('InputCode', ''),
+                'error_message': True
+            }
+            return render(request, 'game/join.html', context)
 
 
 def game(request):
@@ -62,7 +70,8 @@ def game(request):
 def game_end(request):
     if request.method == 'GET':
         player = Player.objects.get(id=request.session['user_id'])
-        return render(request, 'game/game_end.html', {'player': player, 'lobby': player.lobby, 'players': player.lobby.players.all()})
+        context = {'player': player, 'lobby': player.lobby, 'players': player.lobby.players.all()}
+        return render(request, 'game/game_end.html', context)
 
 
 def status(request, game_id):
@@ -82,19 +91,7 @@ def status(request, game_id):
                 'players': players,
                 'host': True if lobby.host.id == request.session['user_id'] else False
             }
-        elif lobby.round == -1:
-            players = []
-            for fellow_player in lobby.players.all():
-                players.append({
-                    'id': fellow_player.id,
-                    'username': fellow_player.username
-                })
-            data = {
-                'winning_team': lobby.winning_team,
-                'players': players,
-                'host': True if lobby.host.id == request.session['user_id'] else False
-            }
-        else:
+        elif lobby.round > 0:
             players = []
             for fellow_player in lobby.players.all():
                 fellow_player_dict = {
@@ -104,10 +101,10 @@ def status(request, game_id):
                     'vote_count': fellow_player.voters.count()
                 }
 
-                if lobby.round % 2 == 1:
+                if lobby.round % 2 == 0:
                     if player.vote_target and player.vote_target.id == fellow_player.id:
                         fellow_player_dict.update({'selected': True})
-                elif lobby.round % 2 == 0:
+                elif lobby.round % 2 == 1:
                     if player.kill_target and player.kill_target.id == fellow_player.id or \
                        player.heal_target and player.heal_target.id == fellow_player.id:
                         fellow_player_dict.update({'selected': True})
