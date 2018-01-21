@@ -10,7 +10,6 @@ from .models import Player
 from WhoWolf import settings
 
 
-# Create your views here.
 def index(request):
     return render(request, 'game/index.html', {})
 
@@ -91,14 +90,28 @@ def status(request, game_id):
                 'players': players,
                 'host': True if lobby.host.id == request.session['user_id'] else False
             }
-        elif lobby.round > 0:
+        elif lobby.round == -1:
+            players = []
+
+            for fellow_player in lobby.players.all():
+                players.append({
+                    'id': fellow_player.id,
+                    'username': fellow_player.username
+                })
+
+            data = {
+                'winning_team': lobby.winning_team,
+                'players': players,
+                'host': True if lobby.host.id == request.session['user_id'] else False
+            }
+        else:
             players = []
             for fellow_player in lobby.players.all():
                 fellow_player_dict = {
                     'id': fellow_player.id,
                     'username': fellow_player.username,
                     'alive': fellow_player.alive,
-                    'vote_count': fellow_player.voters.count()
+                    'vote_count': fellow_player.voters.count(),
                 }
 
                 if lobby.round % 2 == 0:
@@ -108,6 +121,8 @@ def status(request, game_id):
                     if player.kill_target and player.kill_target.id == fellow_player.id or \
                        player.heal_target and player.heal_target.id == fellow_player.id:
                         fellow_player_dict.update({'selected': True})
+                    if player.role == 1:
+                        fellow_player_dict.update({'kill_count': fellow_player.killers.count()})
 
                 players.append(fellow_player_dict)
 
@@ -130,8 +145,6 @@ def status(request, game_id):
 
             if time <= 0:
                 lobby.next_round()
-
-        print(data)
 
         return HttpResponse(json.dumps(data), content_type='application/json')
 

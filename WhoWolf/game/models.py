@@ -88,12 +88,14 @@ class Lobby(models.Model):
             self.time = timezone.now() + timezone.timedelta(seconds=15)
             self.save()
 
+            werewolf_alive_count = self.players.filter(alive=True, role=1).count()
+
             for player in self.players.all():
                 if self.round % 2 == 1:
                     if player.voters.count() > self.get_count_alive_players()/2.0:
                         player.alive = False
                 elif self.round % 2 == 0:
-                    if player.killers.count() > 0:
+                    if player.killers.count() == werewolf_alive_count:
                         if not player.healers.count() > 0:
                             player.alive = False
 

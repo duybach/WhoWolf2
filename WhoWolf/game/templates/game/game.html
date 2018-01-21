@@ -53,9 +53,8 @@
                                     kill_button = "<button onclick=\"kill(" + players[i].id + ")\">Kill</button>";
                                 }
                             }
-                            // var vote_count = data.players[i].vote_count;
-                            // action_button = vote_button + " (Votes: " + vote_count + ")";
-                            action_button = kill_button
+                            var kill_count = data.players[i].kill_count;
+                            action_button = kill_button + " (Want dead: " + kill_count + ")";
                         } else if (data.role.id == 2) {
                             var heal_button = "";
                             if (data.alive && players[i].alive && data.role.heal > 0) {

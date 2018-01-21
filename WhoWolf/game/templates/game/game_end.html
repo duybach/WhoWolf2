@@ -10,8 +10,6 @@
 
         <p>GG {{ player.username }}</p>
 
-        <p>{% if player.username == lobby.host.username %} You are the host {% endif %} </p>
-
         <p id="role">Your role was {{ player.role|get_role_name }}</p>
 
         <p>List of players</p>
