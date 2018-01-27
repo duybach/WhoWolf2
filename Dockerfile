@@ -1,6 +1,6 @@
 FROM python:3.6
 
-EXPOSE 8000
+EXPOSE 80
 RUN mkdir /app/
 COPY . /app/srv
 
