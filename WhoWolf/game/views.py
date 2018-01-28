@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.shortcuts import HttpResponse
 from django.utils import timezone
+from django.core import serializers
 
 from .models import Lobby
 from .models import Player
@@ -190,3 +191,6 @@ def heal(request, game_id):
             player.save()
 
         return HttpResponse(json.dumps(''), content_type='application/json')
+
+def blubb(request):
+    return HttpResponse(json.dumps(Player.all_to_json()), content_type='application/json')

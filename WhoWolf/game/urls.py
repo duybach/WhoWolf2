@@ -9,6 +9,7 @@ urlpatterns = [
     path('join_game', views.join_game, name='join_game'),
     path('game', views.game, name='game'),
     path('game_end', views.game_end, name='game_end'),
+    path('blubb', views.blubb, name='blubb'),
 
     # ajax api
     path('game/<str:game_id>/status', views.status, name='status'),

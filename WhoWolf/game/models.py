@@ -129,3 +129,10 @@ class Player(models.Model):
         self.kill_target = None
         self.heal_target = None
         self.save()
+
+    @classmethod
+    def all_to_json(cls):
+        querySet = cls.objects.all()
+        response = [{'name': player.username, 'alive' : player.alive} for player in querySet] 
+        return response
+    
