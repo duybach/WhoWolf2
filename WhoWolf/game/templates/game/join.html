@@ -5,7 +5,7 @@
 
 {% if error_message %}
     <div class="alert alert-danger" role="alert">
-        <strong>Wrong code!</strong> Ask your host again for the correct code.
+        {{ error_message|safe }}
     </div>
 {% endif %}
 

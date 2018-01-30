@@ -43,26 +43,30 @@ def join_game(request):
     if request.method == 'GET':
         return render(request, 'game/join.html', {})
     elif request.method == 'POST':
+        context = {
+            'InputUserName': request.POST.get('InputUserName', ''),
+            'InputCode': request.POST.get('InputCode', '')
+        }
         game_id = request.POST['InputCode'].upper()
         try:
             lobby = Lobby.objects.get(game_id=game_id)
         except Lobby.DoesNotExist:
             lobby = None
+            context.update({'error_message': '<strong>Wrong code!</strong> Ask your host again for the correct code.'})
 
-        if lobby:
+        if lobby and lobby.round == 0:
             player = Player.create(request.POST.get('InputUserName', 'Anon'), lobby)
             player.save()
 
             request.session['user_id'] = player.id
 
             return redirect('game:game')
-        else:
-            context = {
-                'InputUserName': request.POST.get('InputUserName', ''),
-                'InputCode': request.POST.get('InputCode', ''),
-                'error_message': True
-            }
-            return render(request, 'game/join.html', context)
+        elif lobby and lobby.round > 0:
+            context.update({'error_message': 'Game already in progress!'})
+        elif lobby and lobby.round == -1:
+            context.update({'error_message': 'Game already finished!'})
+
+        return render(request, 'game/join.html', context)
 
 
 def game(request):
