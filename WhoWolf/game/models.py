@@ -11,6 +11,7 @@ class Lobby(models.Model):
     round = models.IntegerField(default=0)
     winning_team = models.IntegerField(default=0)
     time = models.DateTimeField(null=True)
+    time_per_round = models.IntegerField(default=60)
     werewolf_count = models.IntegerField(default=0)
     witch_count = models.IntegerField(default=0)
 
@@ -78,14 +79,14 @@ class Lobby(models.Model):
     def set_round(self, round):
         if round == 1:
             self.round = 1
-            self.time = timezone.now() + timezone.timedelta(seconds=15)
+            self.time = timezone.now() + timezone.timedelta(seconds=self.time_per_round)
             self.save()
             self.assign_roles()
 
     def next_round(self):
         if self.round >= 0:
             self.round += 1
-            self.time = timezone.now() + timezone.timedelta(seconds=15)
+            self.time = timezone.now() + timezone.timedelta(seconds=self.time_per_round)
             self.save()
 
             werewolf_alive_count = self.players.filter(alive=True, role=1).count()

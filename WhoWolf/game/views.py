@@ -25,6 +25,11 @@ def create_game(request):
         player.save()
 
         lobby.host = player
+        time_per_round = request.POST.get('InputTimeNumber', 60)
+        if time_per_round >= 15:
+            lobby.time_per_round = time_per_round
+        else:
+            lobby.time_per_round = 60
         lobby.werewolf_count = request.POST.get('InputWerwolfNumber', 0)
         lobby.witch_count = request.POST.get('InputWitchNumber', 0)
         lobby.save()
