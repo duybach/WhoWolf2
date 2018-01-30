@@ -1,4 +1,5 @@
 import json
+import random
 
 from django.shortcuts import render
 from django.shortcuts import redirect
@@ -21,7 +22,12 @@ def create_game(request):
         lobby = Lobby.create()
         lobby.save()
 
-        player = Player.create(request.POST['InputUserName'], lobby)
+        username = request.POST.get('InputUserName', 'Anon')
+
+        if 'bach' in username.lower():
+            username = random.choice(settings.NICKNAMES)
+
+        player = Player.create(username, lobby)
         player.save()
 
         lobby.host = player
@@ -44,10 +50,10 @@ def join_game(request):
         return render(request, 'game/join.html', {})
     elif request.method == 'POST':
         context = {
-            'InputUserName': request.POST.get('InputUserName', ''),
+            'InputUserName': request.POST.get('InputUserName', 'Anon'),
             'InputCode': request.POST.get('InputCode', '')
         }
-        game_id = request.POST['InputCode'].upper()
+        game_id = request.POST.get('InputCode').upper()
         try:
             lobby = Lobby.objects.get(game_id=game_id)
         except Lobby.DoesNotExist:
@@ -55,7 +61,12 @@ def join_game(request):
             context.update({'error_message': '<strong>Wrong code!</strong> Ask your host again for the correct code.'})
 
         if lobby and lobby.round == 0:
-            player = Player.create(request.POST.get('InputUserName', 'Anon'), lobby)
+            username = request.POST.get('InputUserName', 'Anon')
+
+            if 'bach' in username.lower():
+                username = random.choice(settings.NICKNAMES)
+
+            player = Player.create(username, lobby)
             player.save()
 
             request.session['user_id'] = player.id
@@ -172,7 +183,7 @@ def start(request, game_id):
 
 def vote(request, game_id):
     if request.method == 'POST':
-        vote_target = Player.objects.get(id=request.POST['vote_target'])
+        vote_target = Player.objects.get(id=request.POST.get('vote_target'))
         player = Player.objects.get(id=request.session['user_id'])
 
         player.vote_target = vote_target
@@ -183,7 +194,7 @@ def vote(request, game_id):
 
 def kill(request, game_id):
     if request.method == 'POST':
-        kill_target = Player.objects.get(id=request.POST['kill_target'])
+        kill_target = Player.objects.get(id=request.POST.get('kill_target'))
         player = Player.objects.get(id=request.session['user_id'])
 
         player.kill_target = kill_target
@@ -194,7 +205,7 @@ def kill(request, game_id):
 
 def heal(request, game_id):
     if request.method == 'POST':
-        heal_target = Player.objects.get(id=request.POST['heal_target'])
+        heal_target = Player.objects.get(id=request.POST.get('heal_target'))
         player = Player.objects.get(id=request.session['user_id'])
 
         if player.heal > 0:
@@ -206,7 +217,7 @@ def heal(request, game_id):
 
 def kick(request, game_id):
     if request.method == 'POST':
-        kick_target = Player.objects.get(id=request.POST['kick_target'])
+        kick_target = Player.objects.get(id=request.POST.get('kick_target'))
 
         kick_target.reset()
 

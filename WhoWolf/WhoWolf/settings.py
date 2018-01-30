@@ -124,3 +124,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"), )
 
 ROLES = ['Bauer', 'Werwolf', 'Hexe']
+
+NICKNAMES = [
+    'Bach-lover',
+    'Opfer',
+    'Homofürst der Dunkelheit',
+    '٩(̾●̮̮̃̾•̃̾)۶',
+    ' ۜ\(סּںסּَ` )/ۜ',
+    '✌(◕‿-)✌',
+    '¯\_(ツ)_/¯ ',
+    '(╯°□°）╯︵ ┻━┻'
+]
