@@ -113,7 +113,7 @@ class Lobby(models.Model):
 
 class Player(models.Model):
     username = models.CharField(max_length=32)
-    lobby = models.ForeignKey(Lobby, on_delete=models.CASCADE, related_name='players')
+    lobby = models.ForeignKey(Lobby, null=True, on_delete=models.CASCADE, related_name='players')
     alive = models.BooleanField(default=True)
     role = models.IntegerField(default=0)
     heal = models.IntegerField(default=0)
@@ -126,6 +126,16 @@ class Player(models.Model):
         return cls(username=username, lobby=lobby)
 
     def reset_actions(self):
+        self.vote_target = None
+        self.kill_target = None
+        self.heal_target = None
+        self.save()
+
+    def reset(self):
+        self.lobby = None
+        self.alive = False
+        self.role = -1
+        self.heal = 0
         self.vote_target = None
         self.kill_target = None
         self.heal_target = None

@@ -95,6 +95,9 @@ def status(request, game_id):
                 'players': players,
                 'host': True if lobby.host.id == request.session['user_id'] else False
             }
+
+            if player.role == -1:
+                data.update({'role': player.role})
         elif lobby.round == -1:
             players = []
 
@@ -193,5 +196,14 @@ def heal(request, game_id):
         if player.heal > 0:
             player.heal_target = heal_target
             player.save()
+
+        return HttpResponse(json.dumps(''), content_type='application/json')
+
+
+def kick(request, game_id):
+    if request.method == 'POST':
+        kick_target = Player.objects.get(id=request.POST['kick_target'])
+
+        kick_target.reset()
 
         return HttpResponse(json.dumps(''), content_type='application/json')

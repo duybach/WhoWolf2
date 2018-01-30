@@ -2,6 +2,16 @@
 
 {% block content %}
     <div class="text-center">
+        {% if request.GET.kicked %}
+            <div class="alert alert-danger alert-dismissible margin-top-2" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div>
+                    You got kicked :(
+                </div>
+            </div>
+        {% endif %}
         <h1 id="index-headline">Welcome player!</h1>
         <div>
             <a href="{% url 'game:create_game' %}" role="button" class="btn btn-primary index-button">Create game</a>

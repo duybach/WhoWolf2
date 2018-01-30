@@ -69,12 +69,15 @@
                             action_button = heal_button
                         }
                     }
-                } else {
-                    var player_status = "Dead";
                 }
 
                 if (data.round == 0) {
-                    players_list += "<p>- " + players[i].username + "</p>";
+                    if (data.host) {
+                        var kick_button = "<button onclick=\"kick(" + players[i].id + ")\">Kick</button>";
+                        players_list += "<p>- " + players[i].username + " " + kick_button + "</p>";
+                    } else {
+                        players_list += "<p>- " + players[i].username + "</p>";
+                    }
                 } else {
                     if (players[i].alive) {
                         players_list += "<p>- " + players[i].username + " " + action_button + "</p>";
@@ -103,6 +106,9 @@
                 $("#round").html(data.round);
                 $("#time").html(data.time);
                 if (data.role) {
+                    if (data.role == -1) {
+                        window.location.replace("{% url 'game:index' %}?kicked=True");
+                    }
                     var role_text = "Your role is " + data.role.name
                     if (data.role.id == 2) {
                         role_text = role_text.concat(". You have " + data.role.heal + " heal left.")
@@ -172,6 +178,20 @@
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",
                     "heal_target": user_id
+                }
+            }).done(function(data) {
+                // do nothing
+            });
+        }
+
+        function kick(user_id) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'game:kick' lobby.game_id %}",
+                dataType: "json",
+                data: {
+                    "csrfmiddlewaretoken": "{{ csrf_token }}",
+                    "kick_target": user_id
                 }
             }).done(function(data) {
                 // do nothing
