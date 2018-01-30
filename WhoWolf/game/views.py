@@ -31,7 +31,7 @@ def create_game(request):
         player.save()
 
         lobby.host = player
-        time_per_round = request.POST.get('InputTimeNumber', 60)
+        time_per_round = int(request.POST.get('InputTimePerRound', 60))
         if time_per_round >= 15:
             lobby.time_per_round = time_per_round
         else:
@@ -161,6 +161,7 @@ def status(request, game_id):
                 'alive': player.alive,
                 'role': role,
                 'players': players,
+                'count_players_alive': lobby.get_count_alive_players(),
                 'round': lobby.round,
                 'time': time,
                 'host': True if lobby.host.username == request.session['user_id'] else False
@@ -183,11 +184,11 @@ def start(request, game_id):
 
 def vote(request, game_id):
     if request.method == 'POST':
-        vote_target = Player.objects.get(id=request.POST.get('vote_target'))
         player = Player.objects.get(id=request.session['user_id'])
+        vote_target = Player.objects.get(id=request.POST.get('vote_target'))
+        lobby = Lobby.objects.get(game_id=game_id)
 
-        player.vote_target = vote_target
-        player.save()
+        player.vote(lobby, vote_target)
 
         return HttpResponse(json.dumps(''), content_type='application/json')
 

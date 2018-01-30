@@ -42,7 +42,8 @@
                             }
                         }
                         var vote_count = data.players[i].vote_count;
-                        action_button = vote_button + " (Votes: " + vote_count + ")";
+                        var max_vote = Math.ceil((data.count_players_alive + 1) / 2);
+                        action_button = vote_button + " (Votes: " + vote_count + "/" + max_vote + ")";
                     } else if (data.round % 2 == 1) {
                         if (data.role.id == 1) {
                             var kill_button = "";

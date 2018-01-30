@@ -1,6 +1,7 @@
 import random
 
 from django.db import models
+from django.db import transaction
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
@@ -83,6 +84,7 @@ class Lobby(models.Model):
             self.save()
             self.assign_roles()
 
+    @transaction.atomic
     def next_round(self):
         if self.round >= 0:
             self.round += 1
@@ -124,6 +126,13 @@ class Player(models.Model):
     @classmethod
     def create(cls, username, lobby):
         return cls(username=username, lobby=lobby)
+
+    def vote(self, lobby, vote_target):
+        self.vote_target = vote_target
+        self.save()
+
+        if vote_target.voters.count() > lobby.get_count_alive_players() / 2.0:
+            lobby.next_round()
 
     def reset_actions(self):
         self.vote_target = None
